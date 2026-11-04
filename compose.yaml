@@ -1,0 +1,81 @@
+services:
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - chimera-data:/data
+      - chimera-secrets:/secrets
+      - ./geolite:/geolite:ro
+    environment:
+      SCANNERS_URL: http://scanners:8010
+      HARVESTER_URL: http://harvester:8010
+      SPIDERFOOT_URL: http://spiderfoot:8010
+      PHONEINFOGA_URL: http://phoneinfoga:8010
+      ACCOUNTS_URL: http://accounts:8010
+      ETHEREUM_ETL_URL: http://ethereumetl:8010
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+  scanners:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: tools/Dockerfile.scanners
+    environment:
+      RUNNER_TOOLS: maigret,sherlock,holehe
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+  accounts:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: tools/Dockerfile.accounts
+    environment:
+      RUNNER_TOOLS: socialscan,ignorant,whatsmyname,pywhat
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+  ethereumetl:
+    profiles: [crypto]
+    build:
+      context: .
+      dockerfile: tools/Dockerfile.ethereumetl
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+  harvester:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: tools/Dockerfile.harvester
+    environment:
+      RUNNER_TOOLS: theharvester
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+  spiderfoot:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: tools/Dockerfile.spiderfoot
+    environment:
+      RUNNER_TOOLS: spiderfoot
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+  phoneinfoga:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: tools/Dockerfile.phoneinfoga
+    environment:
+      RUNNER_TOOLS: phoneinfoga
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+volumes:
+  chimera-data:
+  chimera-secrets:
+

@@ -1,0 +1,10 @@
+FROM sundowndev/phoneinfoga:v2.11.0 AS phone
+FROM python:3.12-alpine
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+RUN pip install --no-cache-dir fastapi==0.128.0 uvicorn==0.40.0 && adduser -D -u 10001 chimera
+COPY --from=phone /app/phoneinfoga /usr/local/bin/phoneinfoga
+COPY tools/runner.py /opt/runner/runner.py
+COPY app/result_rules.py /opt/runner/result_rules.py
+USER chimera
+WORKDIR /opt/runner
+CMD ["python", "-m", "uvicorn", "runner:app", "--host", "0.0.0.0", "--port", "8010", "--no-access-log"]

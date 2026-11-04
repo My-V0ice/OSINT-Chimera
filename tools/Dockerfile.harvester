@@ -1,0 +1,11 @@
+FROM python:3.14-slim
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 UV_PROJECT_ENVIRONMENT=/opt/harvester-env
+ARG HARVESTER_REF=6790b147f52309e4eee22ed941db1d285ab2ec23
+RUN apt-get update && apt-get install -y --no-install-recommends git gcc libc6-dev && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir fastapi==0.128.0 uvicorn==0.40.0 uv==0.9.5 && git init /opt/harvester && cd /opt/harvester && git remote add origin https://github.com/laramies/theHarvester.git && git fetch --depth 1 origin "$HARVESTER_REF" && git checkout FETCH_HEAD && uv sync --frozen --no-dev
+RUN useradd -m -u 10001 chimera
+COPY tools/runner.py /opt/runner/runner.py
+COPY app/result_rules.py /opt/runner/result_rules.py
+USER chimera
+WORKDIR /opt/runner
+CMD ["python", "-m", "uvicorn", "runner:app", "--host", "0.0.0.0", "--port", "8010", "--no-access-log"]

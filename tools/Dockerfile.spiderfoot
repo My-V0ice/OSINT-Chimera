@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+ARG SPIDERFOOT_REF=b9c345de5b085debc7444fc10e0e26e7745df5f2
+RUN apt-get update && apt-get install -y --no-install-recommends git gcc g++ libxml2-dev libxslt1-dev libffi-dev libssl-dev && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/root/.cache/pip pip install fastapi==0.128.0 uvicorn==0.40.0
+RUN git init /opt/spiderfoot && cd /opt/spiderfoot && git remote add origin https://github.com/smicallef/spiderfoot.git && git fetch --depth 1 origin "$SPIDERFOOT_REF" && git checkout FETCH_HEAD && python -m venv /opt/spiderfoot-env
+RUN --mount=type=cache,target=/root/.cache/pip /opt/spiderfoot-env/bin/pip install 'Cython==0.29.36' 'setuptools<70' wheel && /opt/spiderfoot-env/bin/pip install --no-build-isolation PyYAML==5.4.1
+RUN --mount=type=cache,target=/root/.cache/pip /opt/spiderfoot-env/bin/pip install -r /opt/spiderfoot/requirements.txt
+RUN useradd -m -u 10001 chimera && chown -R chimera:chimera /opt/spiderfoot
+COPY tools/runner.py /opt/runner/runner.py
+COPY app/result_rules.py /opt/runner/result_rules.py
+USER chimera
+WORKDIR /opt/runner
+CMD ["python", "-m", "uvicorn", "runner:app", "--host", "0.0.0.0", "--port", "8010", "--no-access-log"]

@@ -1,0 +1,9 @@
+fastapi==0.128.0
+uvicorn==0.40.0
+httpx==0.28.1
+cryptography==46.0.6
+dnspython==2.8.0
+phonenumbers==9.0.17
+ipwhois==1.3.0
+geoip2==5.1.0
+

@@ -1,0 +1,8 @@
+FROM python:3.10-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+RUN pip install --no-cache-dir fastapi==0.128.0 uvicorn==0.40.0 httpx==0.28.1 ethereum-etl==2.4.2
+RUN useradd -m -u 10001 chimera
+COPY tools/etl_runner.py /opt/etl/etl_runner.py
+USER chimera
+WORKDIR /opt/etl
+CMD ["python", "-m", "uvicorn", "etl_runner:app", "--host", "0.0.0.0", "--port", "8010", "--no-access-log"]
